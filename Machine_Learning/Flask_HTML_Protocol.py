@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[37]:
-
 
 from flask import Flask,render_template,request
 import pickle
@@ -74,10 +72,3 @@ def predict():
 
 if __name__=='__main__':
     app.run()
-
-
-# In[ ]:
-
-
-
-
