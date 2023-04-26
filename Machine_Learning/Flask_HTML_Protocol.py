@@ -91,7 +91,7 @@ def predict():
             break
     
     print('This is the dictinary: ', doc)
-    loaded_model = pickle.load(open('Capstone_RFC_Model.sav', 'rb'))
+    loaded_model = pickle.load(open('./Machine_Learning/Capstone_RFC_Model.sav', 'rb'))
     a = np.expand_dims(z, 0)
     result = str(loaded_model.predict(a))
     print(result)
