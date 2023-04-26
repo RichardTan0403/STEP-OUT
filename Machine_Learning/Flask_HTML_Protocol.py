@@ -16,7 +16,7 @@ def greeting():
 # @app.route('/data/', methods = ['POST', 'GET'])
 # def data():
 #     form_data = request.form
-#     if request.method == 'GET':
+#     if request.method == 'GET': 
 #         return str(list(form_data.values()))
 #     if request.method == 'POST':
 #         form_data = request.form
