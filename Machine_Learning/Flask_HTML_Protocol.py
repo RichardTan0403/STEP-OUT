@@ -65,10 +65,10 @@ def predict():
         else:
             y[i] = 1
             z.append(y[i])
-    print(z)
+    # print(z)
     for i in range(len(z)):
         raw_data.append(str(z[i]))
-    print("This is the Second Raw Data:", raw_data)
+    # print("This is the Second Raw Data:", raw_data)
     feature_data = [
         'Gender',
         'Severity',
@@ -83,6 +83,7 @@ def predict():
         'Sore Throat',
         'Tireness'
     ]
+    
     doc = {}
     for key in feature_data:
         for value in raw_data:
@@ -90,7 +91,7 @@ def predict():
             raw_data.remove(value)
             break
     
-    print('This is the dictinary: ', doc)
+    # print('This is the dictinary: ', doc)
     loaded_model = pickle.load(open('./Machine_Learning/Capstone_RFC_Model.sav', 'rb'))
     a = np.expand_dims(z, 0)
     result = str(loaded_model.predict(a))
