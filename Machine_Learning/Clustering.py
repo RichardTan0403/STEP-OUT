@@ -15,9 +15,15 @@ from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
 dataset['Gender'] = le.fit_transform(dataset['Gender'])
 dataset.head()
+pd.cut(dataset.Age, bins =[16, 32, 60, 79], labels= ['Young','Middle_Age', 'Old'])
+pd.cut(dataset.Systolic_bp , bins = [70, 90, 120, 140, 190], labels = ['Low','Optimal','High Normal', 'Hypertension'])
+pd.cut(dataset.diastolic_bp, bins = [40, 60, 80,90, 100], labels =  ['Low','Optimal','High Normal', 'Hypertension'])
+pd.cut(dataset.Oxygen_Level, bins = [80,92, 94, 96, 100], labels = ['Extreme low', 'Low', 'Intermediate','Ideal'])
 
-Y = dataset['Result']
-X = dataset
+Y = dataset['Result'].array.reshape(-1,1)
+X = dataset.drop('Result', axis = 1)
+
+dataset['Result'].value_counts()
 
 
 cols = X.columns
@@ -25,27 +31,24 @@ from sklearn.preprocessing import MinMaxScaler
 ms = MinMaxScaler()
 X = ms.fit_transform(X)
 X = pd.DataFrame(X, columns=[cols])
-X
 
-from sklearn.cluster import KMeans
-cs = []
-for i in range(1,11):
-    kmeans = KMeans(n_clusters = i, init = 'k-means++', max_iter = 300, n_init= 10, random_state = 5)
-    kmeans.fit(X)
-    cs.append(kmeans.inertia_)
-
-plt.plot(range(1,11), cs)
-plt.title('The Elbow Method')
-plt.xlabel('Number of Clusters')
-plt.ylabel('CS')
+sns.heatmap(dataset.corr(),vmin = -1, vmax = 1, annot= True)
 plt.show()
 
-kmeans = KMeans(n_clusters=2, random_state=5)
-kmeans.fit(X)
-labels = kmeans.labels_
-# labels = pd.DataFrame(labels)
-# labels.value_counts()
+from sklearn.model_selection import train_test_split as tts
+Trained_X,Tested_X,Trained_Y,Tested_Y = tts(X,Y,test_size=0.2,random_state=5)
 
-correct_labels = sum(Y == labels)
-print("Result: %d out of %d samples were correctly labeled." % (correct_labels, Y.size))
-print('Accuracy score: {0:0.2f}'. format(correct_labels/float(Y.size)))
+from sklearn.ensemble import RandomForestClassifier as RFC
+from sklearn.metrics import accuracy_score
+rfc = RFC()
+rfc.fit(Trained_X, Trained_Y)
+
+y_pred4 = rfc.predict(Tested_X)
+acc = accuracy_score(Tested_Y, y_pred4)
+print('Accuracy of Random Forest: ', acc*100, '%')
+
+from sklearn import metrics
+confusion_matrix = metrics.confusion_matrix(Tested_Y, y_pred4)
+cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix)
+cm_display.plot()
+plt.show()
