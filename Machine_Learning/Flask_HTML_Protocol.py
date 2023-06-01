@@ -1,17 +1,12 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-
 from flask import Flask, render_template, request
 import pickle
 import numpy as np
 
-app = Flask(__name__)
-
+app = Flask(__name__, template_folder= 'template')
 
 @app.route('/')
 def greeting():
-    return render_template('form.html')
+    return render_template('patient.html')
 
 # @app.route('/data/', methods = ['POST', 'GET'])
 # def data():
