@@ -4,27 +4,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
 warnings.filterwarnings('ignore')
+import tensorflow as tf
 
-dataset = pd.read_csv("./Machine_Learning/Sample.csv")
-dataset.shape
-dataset.isna().sum()
-dataset.duplicated().sum()
-dataset.describe()
+dataset = pd.read_csv("./Machine_Learning/Final_Sample.csv")
+dataset = dataset.drop('Gender', axis = 1)
 
-from sklearn.preprocessing import LabelEncoder
-le = LabelEncoder()
-dataset['Gender'] = le.fit_transform(dataset['Gender'])
-dataset.head()
-pd.cut(dataset.Age, bins =[16, 32, 60, 79], labels= ['Young','Middle_Age', 'Old'])
-pd.cut(dataset.Systolic_bp , bins = [70, 90, 120, 140, 190], labels = ['Low','Optimal','High Normal', 'Hypertension'])
-pd.cut(dataset.diastolic_bp, bins = [40, 60, 80,90, 100], labels =  ['Low','Optimal','High Normal', 'Hypertension'])
-pd.cut(dataset.Oxygen_Level, bins = [80,92, 94, 96, 100], labels = ['Extreme low', 'Low', 'Intermediate','Ideal'])
-
-Y = dataset['Result'].array.reshape(-1,1)
+Y = dataset['Result']
 X = dataset.drop('Result', axis = 1)
-
-dataset['Result'].value_counts()
-
 
 cols = X.columns
 from sklearn.preprocessing import MinMaxScaler
@@ -32,23 +18,63 @@ ms = MinMaxScaler()
 X = ms.fit_transform(X)
 X = pd.DataFrame(X, columns=[cols])
 
-sns.heatmap(dataset.corr(),vmin = -1, vmax = 1, annot= True)
-plt.show()
-
 from sklearn.model_selection import train_test_split as tts
 Trained_X,Tested_X,Trained_Y,Tested_Y = tts(X,Y,test_size=0.2,random_state=5)
 
-from sklearn.ensemble import RandomForestClassifier as RFC
-from sklearn.metrics import accuracy_score
-rfc = RFC()
-rfc.fit(Trained_X, Trained_Y)
+Trained_X = np.asarray(Trained_X)
+Trained_Y = np.asarray(Trained_Y)
 
-y_pred4 = rfc.predict(Tested_X)
-acc = accuracy_score(Tested_Y, y_pred4)
-print('Accuracy of Random Forest: ', acc*100, '%')
+#Initialising ANN
+from keras.models import Sequential
+ann = Sequential()
 
-from sklearn import metrics
-confusion_matrix = metrics.confusion_matrix(Tested_Y, y_pred4)
-cm_display = metrics.ConfusionMatrixDisplay(confusion_matrix = confusion_matrix)
-cm_display.plot()
+ #Adding First Hidden Layer
+from keras.layers import Dense
+ann.add(Dense(units=11,activation="relu", kernel_initializer='uniform', input_dim = 18))
+
+ #Adding Second Hidden Layer
+ann.add(Dense(units=11,activation="relu",kernel_initializer='uniform'))
+
+#Adding Third Hidden Layer
+ann.add(Dense(units=11,activation="relu",kernel_initializer='uniform'))
+
+#Adding Forth Hidden Layer
+ann.add(Dense(units=11,activation="relu",kernel_initializer='uniform'))
+
+ #Adding Fifth Hidden Layer
+ann.add(Dense(units=11,activation="relu",kernel_initializer='uniform'))
+
+ #Adding Sixth Hidden Layer
+ann.add(Dense(units=11,activation="relu", kernel_initializer='uniform'))
+
+ #Adding Output Layer
+ann.add(Dense(units=1,kernel_initializer='uniform',activation="sigmoid"))
+
+#Compiling ANN
+ann.compile(optimizer="adam",loss="binary_crossentropy",metrics=['accuracy'])
+
+#Fitting ANN
+ann.fit(Trained_X,Trained_Y,batch_size=64,epochs = 200)
+_, accuracy = ann.evaluate(Trained_X, Trained_Y)
+print('Accuracy : %.2f' % (accuracy*100))
+
+from sklearn.metrics import confusion_matrix
+y_pred_proba1 = ann.predict(Tested_X)
+y_pred_proba1 = (y_pred_proba1 > 0.65)
+
+from sklearn.metrics import confusion_matrix
+conf_mat = confusion_matrix(Tested_Y, y_pred_proba1)
+confusion = sns.heatmap(conf_mat, square=False, annot=True, fmt='d', cbar=False,
+                        xticklabels= ['Negative', 'Positive'],
+                       yticklabels= ['Negative', 'Positive'])
+plt.xlabel('true label')
+plt.ylabel('predicted label')
 plt.show()
+
+from sklearn.metrics import accuracy_score
+acc = accuracy_score(Tested_Y, y_pred_proba1)
+print('Accuracy of ANN: ', acc*100, '%')
+
+import pickle
+filename = 'ANN.sav'
+pickle.dump(ann,open(filename,'wb'))
